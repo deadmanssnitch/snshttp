@@ -33,3 +33,14 @@ Amazon SNS expects a webhook to return a response within 15 seconds, any longer
 and it considers the request failed and it will try again. Because of this, the
 context.Context passed to each snshttp.EventHandler receiver has a 15 second
 timeout set from when the request is received.
+
+## Thanks
+
+Continued development is sponsored by [Dead Man's Snitch](https://deadmanssnitch.com).
+
+Ever been surprised that a critical scheduled task was silently failing to
+run? Whether it's sending invoices, cache clearing, or backups; Dead Man's
+Snitch makes it easy to [monitor cron jobs](https://deadmanssnitch.com/docs/cron-job-monitoring)
+and [Amazon SNS](https://deadmanssnitch.com/docs/amazon-sns) subscriptions.
+
+Get started with [Dead Man's Snitch](https://deadmanssnitch.com/plans) for free
