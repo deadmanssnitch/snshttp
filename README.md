@@ -23,8 +23,11 @@ func (h *EventHandler) Notification(ctx context.Context, event *snshttp.Notifica
   return nil
 }
 
+snsHandler := snshttp.New(&EventHandler{},
+  snshttp.WithAuthentication("sns", "password"),
+)
 
-http.Handler("/hooks/sns", snshttp.New(&EventHandler{}))
+http.Handler("/hooks/sns", snsHandler)
 ```
 
 ## Double Requests
