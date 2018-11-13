@@ -19,17 +19,34 @@ const (
 )
 
 type handler struct {
-	handler EventHandler
+	handler     EventHandler
+	credentials *authOption
 }
 
-func New(eventHandler EventHandler) http.Handler {
-	return &handler{
+// New creates a http.Handler for receiving webhooks from an Amazon SNS
+// subscription and dispatching them to the EventHandler. Options are applied
+// in the order they're provided and may clobber previous options.
+func New(eventHandler EventHandler, opts ...Option) http.Handler {
+	handler := &handler{
 		handler: eventHandler,
 	}
+
+	for _, opt := range opts {
+		opt.apply(handler)
+	}
+
+	return handler
 }
 
 func (h *handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	var err error
+
+	if !h.credentials.Check(req) {
+		resp.Header().Set("WWW-Authenticate", `Basic realm="ses"`)
+		http.Error(resp, "Unauthorized", http.StatusUnauthorized)
+
+		return
+	}
 
 	// Amazon will consider a request failed if it takes longer than 15 seconds
 	// to execute. This does not appear to be configurable.
