@@ -27,6 +27,14 @@ func (h *EventHandler) Notification(ctx context.Context, event *snshttp.Notifica
 http.Handler("/hooks/sns", snshttp.New(&EventHandler{}))
 ```
 
+## Double Requests
+
+When using authentication Amazon SNS will make an initial request without
+authentication information to determine which scheme (Basic or Digest) the
+endpoint is using. Amazon will then make a request using the correct
+authentication scheme. These double requests will happen for every webhook from
+SNS but only one will be received by the EventHandler.
+
 ## Timeouts
 
 Amazon SNS expects a webhook to return a response within 15 seconds, any longer
