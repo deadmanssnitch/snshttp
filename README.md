@@ -1,5 +1,7 @@
 # Amazon SNS HTTP Handler
 
+[![Documentation](https://godoc.org/github.com/deadmanssnitch/snshttp?status.svg)](http://godoc.org/github.com/deadmanssnitch/snshttp)
+
 The snshttp package provides an http.Handler adapter for receiving messages
 from Amazon SNS over HTTP(s) webhooks. The goal is to reduce the boilerplate
 necessary to get a new service or endpoint receiving messages from Amazon SNS.
@@ -8,11 +10,14 @@ necessary to get a new service or endpoint receiving messages from Amazon SNS.
 
 ```go
 type EventHandler struct {
+  // DefaultHandler provides auto confirmation of subscriptions and ignores
+  // unsubscribe events.
   snshttp.DefaultHandler
 }
 
+// Notification is called for messages published to the SNS Topic. When using
+// DefaultHandler as above this is the only event you need to implement.
 func (h *EventHandler) Notification(ctx context.Context, event *snshttp.Notification) error {
-  // Process the event here
   fmt.Printf("id=%q subject=%q message=%q timestamp=%q\n",
     event.MessageID,
     event.Subject,
@@ -23,11 +28,13 @@ func (h *EventHandler) Notification(ctx context.Context, event *snshttp.Notifica
   return nil
 }
 
+// snshttp.New returns an http.Handler that will parse the payload and pass the
+// event to the provided EventHandler.
 snsHandler := snshttp.New(&EventHandler{},
   snshttp.WithAuthentication("sns", "password"),
 )
 
-http.Handler("/hooks/sns", snsHandler)
+http.Handle("/hooks/sns", snsHandler)
 ```
 
 ## Double Requests
