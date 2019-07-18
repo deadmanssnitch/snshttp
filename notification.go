@@ -5,18 +5,21 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
-	"time"
+	"strings"
 )
 
 // Notification events are sent for messages that are published to the SNS
 // topic.
 type Notification struct {
-	MessageID      string    `json:"MessageId"`
-	TopicARN       string    `json:"TopicArn"`
-	Subject        string    `json:"Subject"`
-	Message        string    `json:"Message"`
-	Timestamp      time.Time `json:"Timestamp"`
-	UnsubscribeURL string    `json:"UnsubscribeURL"`
+	Type           string
+	MessageID      string `json:"MessageId"`
+	TopicARN       string `json:"TopicArn"`
+	Subject        string `json:"Subject"`
+	Message        string `json:"Message"`
+	Timestamp      string `json:"Timestamp"`
+	UnsubscribeURL string `json:"UnsubscribeURL"`
+	Signature      string `json:"Signature"`
+	SigningCertURL string `json:"SigningCertURL"`
 
 	// MessageAttributes contain any attributes added to the message when
 	// publishing it to SNS. This is most commonly used when transmitting binary
@@ -46,6 +49,24 @@ func (e *Notification) Unsubscribe(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (e *Notification) SigningString() string {
+	fields := []string{
+		"Message", e.Message,
+		"MessageId", e.MessageID,
+	}
+
+	if e.Subject != "" {
+		fields = append(fields, "Subject", e.Subject)
+	}
+
+	fields = append(fields,
+		"Timestamp", e.Timestamp,
+		"TopicArn", e.TopicARN,
+		"Type", e.Type,
+		"")
+	return strings.Join(fields, "\n")
 }
 
 type MessageAttribute struct {

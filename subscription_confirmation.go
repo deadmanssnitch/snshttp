@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"time"
+	"strings"
 )
 
 // SubscriptionConfirmation is an initial event sent by Amazon SNS as part of a
@@ -12,13 +12,16 @@ import (
 // request to SubscribeURL will finish the handshake and enable Amazon to send
 // Notifications to the webhook.
 type SubscriptionConfirmation struct {
-	MessageID string    `json:"MessageId"`
-	TopicARN  string    `json:"TopicArn"`
-	Timestamp time.Time `json:"Timestamp"`
+	Type      string
+	MessageID string `json:"MessageId"`
+	TopicARN  string `json:"TopicArn"`
+	Timestamp string `json:"Timestamp"`
 
-	Token        string `json:"Token"`
-	Message      string `json:"Message"`
-	SubscribeURL string `json:"SubscribeURL"`
+	Token          string `json:"Token"`
+	Message        string `json:"Message"`
+	SubscribeURL   string `json:"SubscribeURL"`
+	Signature      string `json:"Signature"`
+	SigningCertURL string `json:"SigningCertURL"`
 }
 
 // Confirm finishes the handshake with Amazon, confirming that the subscription
@@ -43,4 +46,17 @@ func (e *SubscriptionConfirmation) Confirm(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (e *SubscriptionConfirmation) SigningString() string {
+	return strings.Join([]string{
+		"Message", e.Message,
+		"MessageId", e.MessageID,
+		"SubscribeURL", e.SubscribeURL,
+		"Timestamp", e.Timestamp,
+		"Token", e.Token,
+		"TopicArn", e.TopicARN,
+		"Type", e.Type,
+		"",
+	}, "\n")
 }

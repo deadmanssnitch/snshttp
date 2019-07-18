@@ -30,10 +30,18 @@ type DefaultHandler struct{}
 
 // SubscriptionConfirmation confirms the subscription.
 func (h DefaultHandler) SubscriptionConfirmation(ctx context.Context, event *SubscriptionConfirmation) error {
+	err := Verify(event.Signature, event.SigningCertURL, event.SigningString())
+	if err != nil {
+		return err
+	}
 	return event.Confirm(ctx)
 }
 
 // UnsubscribeConfirmation does nothing and ignores the event.
-func (h DefaultHandler) UnsubscribeConfirmation(_ context.Context, _ *UnsubscribeConfirmation) error {
+func (h DefaultHandler) UnsubscribeConfirmation(_ context.Context, event *UnsubscribeConfirmation) error {
+	err := Verify(event.Signature, event.SigningCertURL, event.SigningString())
+	if err != nil {
+		return err
+	}
 	return nil
 }
