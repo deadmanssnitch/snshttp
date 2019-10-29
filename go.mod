@@ -1,1 +1,1 @@
-module github.com/deadmanssnitch/snshttp
+module github.com/liping86/snshttp
